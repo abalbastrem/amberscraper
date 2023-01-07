@@ -2,7 +2,7 @@
   "name": "amberscraper",
   "version": "1.0.0",
   "description": "scraper that takes the highlighted text from amberscript and pastes it on a google spreadsheet",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

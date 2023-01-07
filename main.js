@@ -1,4 +1,4 @@
-// Description: This script will extract the highlighted text and the timecode from the transcript.
+const config = require('./config.js');
 
 function main() {
     serverStart();
@@ -14,14 +14,14 @@ function serverStart() {
         const context = await browser.newContext();
         const page = await context.newPage();
 
-        await page.goto(URL_LOGIN);
-        await page.type('input[placeholder="Email"]', USER_EMAIL);
-        await page.type('input[placeholder="Password"]', USER_PASSWORD);
+        await page.goto(config.URL_LOGIN);
+        await page.type('input[placeholder="Email"]', config.USER_EMAIL);
+        await page.type('input[placeholder="Password"]', config.USER_PASSWORD);
         await page.click('button[data-testid="login-btn-login"]');
         await page.waitForNavigation();
 
         // const page2 = await context.newPage();
-        await page.goto(URL_VIDEO, { waitUntil: 'domcontentloaded', timeout: 0 });
+        await page.goto(config.URL_VIDEO, { waitUntil: 'domcontentloaded', timeout: 0 });
         page.waitForNavigation();
         await page.waitForSelector('div[class="WavePlayer__highlight"]'); // does not work
         await page.waitForSelector('button[data-type="close"]');
