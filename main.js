@@ -20,21 +20,25 @@ function serverStart() {
         await page.click('button[data-testid="login-btn-login"]');
         await page.waitForNavigation();
 
-        // const page2 = await context.newPage();
         await page.goto(config.URL_VIDEO, { waitUntil: 'domcontentloaded', timeout: 0 });
         page.waitForNavigation();
         await page.waitForSelector('div[class="WavePlayer__highlight"]'); // does not work
         await page.waitForSelector('button[data-type="close"]');
         await page.click('button[data-type="close"]');
+
+        await hideElement(page, 'footer[class="footer_main"]');
+        await hideElement(page, 'div[class="WavePlayer__mediawrap isVideo isExpanded"]');
+        await hideElement(page, 'header[class="AppBar"]');
         
 
-        var highlightedTextElements = await page.$$('span[style="background-color: rgba(0, 90, 80, 0.35);"] > span');
-        var highlightedTextArray = [];
-        for (let i = 0; i < highlightedTextElements.length; i++) {
-            let highlightedTextElement = highlightedTextElements[i];
-            hlText = await (await highlightedTextElement.getProperty('innerText')).jsonValue();
+        const highlightedSpans = await page.locator('span[style="background-color: rgba(0, 90, 80, 0.35);"] > span').all();
+        var hlTextArr = [];
+        for await (const hlSpan of highlightedSpans) {
+            hlText = await hlSpan.innerText();
             console.log(hlText);
-            await altClickInTimecode(page, highlightedTextElement);
+            await hlSpan.click({modifiers:['Alt']});
+
+            // await altClickInTimecode(page, highlightedTextElement);
             // let tcIn = await getTimecode(page);
             // await altClickOutTimecode(page, highlightedTextElement);
             // let tcOut = await getTimecode(page);
@@ -44,10 +48,8 @@ function serverStart() {
 
 async function altClickInTimecode(page, highlightedTextElement) {
     await highlightedTextElement.focus();
-    await page.keyboard.down('Alt');
-    await highlightedTextElement.click();
-    await page.keyboard.up('Alt');
-    await page.waitForSelector('time');
+    await highlightedTextElement.click({modifiers:['Alt']});
+    // await page.waitForSelector('time');
 }
 
 async function altClickOutTimecode(highlightedTextElement) {
@@ -65,10 +67,9 @@ async function getTimecode(page) {
     return timecode.trim();
 }
 
-function delay(time) {
-    return new Promise(function(resolve) { 
-        setTimeout(resolve, time)
-    });
+ async function hideElement(page, selector) {
+    const el = await page.locator(selector);
+    el.evaluate(element => element.style.display = 'none');
  }
 
 main()
