@@ -1,3 +1,4 @@
+const { selectors } = require('playwright');
 const config = require('./config.js');
 
 function main() {
@@ -21,8 +22,8 @@ function serverStart() {
         await page.waitForNavigation();
 
         await page.goto(config.URL_VIDEO, { waitUntil: 'domcontentloaded', timeout: 0 });
-        page.waitForNavigation();
-        await page.waitForSelector('div[class="WavePlayer__highlight"]'); // does not work
+        await page.waitForNavigation();
+        page.waitForSelector('div[class="WavePlayer__highlight"]');
         await page.waitForSelector('button[data-type="close"]');
         await page.click('button[data-type="close"]');
 
@@ -31,25 +32,45 @@ function serverStart() {
         await hideElement(page, 'header[class="AppBar"]');
         
 
-        const highlightedSpans = await page.locator('span[style="background-color: rgba(0, 90, 80, 0.35);"] > span').all();
-        var hlTextArr = [];
-        for await (const hlSpan of highlightedSpans) {
-            hlText = await hlSpan.innerText();
+        const highlightedTexts = await page.locator('span[style="background-color: rgba(0, 90, 80, 0.35);"] > span').allInnerTexts();
+        var hlBlobArr = [];
+        for (hlText of highlightedTexts) {
+            hlBlob = new Map();
+            hlSpan = await page.getByText(hlText);
+            // click in the first word of hlSpan
+            words = firstNLastWords(hlText);
             console.log(hlText);
+            console.log(words);
             await hlSpan.click({modifiers:['Alt']});
-
-            // await altClickInTimecode(page, highlightedTextElement);
-            // let tcIn = await getTimecode(page);
-            // await altClickOutTimecode(page, highlightedTextElement);
-            // let tcOut = await getTimecode(page);
+            const tcIn = await getTimecode(page);
+            hlBlob.set("tc_in", tcIn);
+            // hlBlob.set("tc_out", tcOut);
+            hlBlob.set("text", hlText);
+            // console.log(hlBlob);
         }
     })();
 }
 
-async function altClickInTimecode(page, highlightedTextElement) {
-    await highlightedTextElement.focus();
-    await highlightedTextElement.click({modifiers:['Alt']});
-    // await page.waitForSelector('time');
+async function firstNLastWords(text) {
+    const textByWords = text.split(' ');
+    const firstWord = textByWords[0];
+    const lastWord = textByWords[textByWords.length-1];
+    
+    return {
+        "first": firstWord,
+        "last": lastWord
+    }
+}
+
+async function clickOnWord(element, word) {
+    await element.evaluate((element, word) => {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.setStart(element.childNodes[0], content.indexOf(word));
+        range.setStart(element.childNodes[0], content.indexOf(word) + word.length);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }, textToClick);
 }
 
 async function altClickOutTimecode(highlightedTextElement) {
@@ -62,7 +83,7 @@ async function altClickOutTimecode(highlightedTextElement) {
 }
 
 async function getTimecode(page) {
-    var timecodeFull = await page.$('time');
+    var timecodeFull = await page.locator('time').first().innerText();
     var timecode = timecodeFull.split('/')[0];
     return timecode.trim();
 }
