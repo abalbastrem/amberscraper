@@ -1,13 +1,41 @@
 const { selectors } = require('playwright');
 const config = require('./config.js');
 
-function main() {
-    serverStart();
+async function main() {
+    const highlights = await serverStart();
+    parseJson(highlights);
 }
 
-function serverStart() {
+function parseJson(highlights) {
+    const jsonData = require('./gabriel_araunjo.json');
+    const segments = jsonData.segments;
+
+    for (highlight of highlights) {
+        const hlWords = highlight.split(' ');
+        let sentence = "";
+        for (segment of segments) {
+            for (word of segment.words) {
+                if (word.text == hlWords[0]) {
+                    sentence += word.text + " ";
+                    for (let i = 1; i < hlWords.length; i++) {
+                        if (hlWords[i] == segment.words[i].text) {
+                            sentence += hlWords[i] + " ";
+                        } else {
+                            sentence = "";
+                            break;
+                        }
+                    }
+                    console.log(sentence);
+                }
+            }
+        }
+    }
+    
+}
+
+async function serverStart() {
     const playwright = require('playwright');
-    (async () => {
+    return (async () => {
         const browser = await playwright.firefox.launch({
             headless: false,
             // args: ['--no-sandbox', '--disable-setuid-sandbox']
@@ -37,47 +65,52 @@ function serverStart() {
         
         console.log("locate highlighted texts");
         const highlightedTexts = await page.locator('span[style="background-color: rgba(0, 90, 80, 0.35);"] > span').allInnerTexts();
-        var hlBlobArr = [];
-        let counter = 0;
-        for (hlText of highlightedTexts) {
-            hlBlob = new Map();
-            let hlSpan = await page.getByText(hlText); // DEBUG too generic texts sometimes!
 
-            const firstId = "first_"+counter;
-            const lastId = "last_"+counter;
+        return highlightedTexts;
 
-            await hlSpan.evaluate((el, num) => {
-                const first = document.createElement('span');
-                first.setAttribute('id', "first_"+num);
-                first.setAttribute('style', "background-color: rgba(0, 90, 80, 0.35)");
-                first.setAttribute('data-text', 'true');
-                first.innerText ="CH"+num;
-                el.insertAdjacentElement('beforebegin', first);
-            }, counter);
+        // var hlBlobArr = [];
+        // let counter = 0;
+        // for (hlText of highlightedTexts) {
+        //     hlBlob = new Map();
+        //     let hlSpan = await page.getByText(hlText); // DEBUG too generic texts sometimes!
 
-            await page.click("#"+firstId, {modifiers:['Alt'], timeout: 5000});
-            const tcIn = await getTimecode(page);
+        //     const firstId = "first_"+counter;
+        //     const lastId = "last_"+counter;
 
-            await hlSpan.evaluate((el, num) => {
-                const last = document.createElement('span');
-                last.setAttribute('id', "last_"+num);
-                // last.setAttribute('style', "background-color: rgba(0, 90, 80, 0.35)");
-                last.setAttribute('style', "float: right;");
-                last.setAttribute('data-text', 'true');
-                last.innerText ="CH"+num;
-                el.insertAdjacentElement('beforeend', last);
-            }, counter);
+        //     await hlSpan.evaluate((el, num) => {
+        //         const first = document.createElement('span');
+        //         first.setAttribute('id', "first_"+num);
+        //         first.setAttribute('style', "background-color: rgba(0, 90, 80, 0.35)");
+        //         first.setAttribute('data-text', 'true');
+        //         first.innerText ="FI"+num;
+        //         el.insertAdjacentElement('beforebegin', first);
+        //     }, counter);
 
-            await page.click("#"+lastId, {modifiers:['Alt'], timeout: 5000});
-            const tcOut = await getTimecode(page);
+        //     await page.click("#"+firstId, {modifiers:['Alt'], timeout: 5000});
+        //     const tcIn = await getTimecode(page);
 
-            hlBlob.set("tc_in", tcIn);
-            hlBlob.set("tc_out", tcOut);
-            hlBlob.set("text", hlText);
-            console.log(hlBlob);
+        //     const hlSpanNextSibling = await hlSpan.evaluateHandle((hlSpan) => hlSpan.nextElementSibling);
 
-            counter++;
-        }
+        //     await hlSpanNextSibling.evaluate((el, num) => {
+        //         const last = document.createElement('span');
+        //         last.setAttribute('id', "last_"+num);
+        //         // last.setAttribute('style', "background-color: rgba(0, 90, 80, 0.35)");
+        //         last.setAttribute('style', "float: right;");
+        //         last.setAttribute('data-text', 'true');
+        //         last.innerText ="LT"+num;
+        //         el.insertAdjacentElement('beforebegin', last);
+        //     }, counter);
+
+        //     await page.click("#"+lastId, {modifiers:['Alt'], timeout: 5000});
+        //     const tcOut = await getTimecode(page);
+
+        //     hlBlob.set("tc_in", tcIn);
+        //     hlBlob.set("tc_out", tcOut);
+        //     hlBlob.set("text", hlText);
+        //     console.log(hlBlob);
+
+        //     counter++;
+        // }
     })();
 }
 
