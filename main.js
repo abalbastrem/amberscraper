@@ -2,30 +2,59 @@ const { selectors } = require('playwright');
 const config = require('./config.js');
 
 async function main() {
-    const highlights = await serverStart();
-    parseJson(highlights);
+    // const highlights = await serverStart();
+    // writeOut(highlights);
+    parseJson();
 }
 
-function parseJson(highlights) {
-    const jsonData = require('./gabriel_araunjo.json');
-    const segments = jsonData.segments;
+function writeOut(highlights) {
+    const fs = require('fs');
+    const json = JSON.stringify(highlights);
+    fs.writeFile('highlights.json', json, 'utf8', (err) => {
+        if (err) {
+            console.log("Error writing file", err);
+        } else {
+            console.log("Successfully wrote file");
+        }
+    });
+}
+
+function parseJson() {
+    const highlights = require('./highlights.json');
+    const timecodes = require('./gabriel_araunjo.json');
+    const segments = timecodes.segments;
 
     for (highlight of highlights) {
         const hlWords = highlight.split(' ');
-        let sentence = "";
+        let j = 0;
         for (segment of segments) {
-            for (word of segment.words) {
-                if (word.text == hlWords[0]) {
-                    sentence += word.text + " ";
-                    for (let i = 1; i < hlWords.length; i++) {
-                        if (hlWords[i] == segment.words[i].text) {
-                            sentence += hlWords[i] + " ";
+            for (let i = 0; i < segment.words.length; i++) {
+                if (segment.words[i].text == hlWords[j]) {
+                    sentence = "";
+                    while (j < hlWords.length) {
+                        let tcWord = segment.words[i+j].text.replace(/[^a-zA-Z0-9]/g, "");
+                        let hlWord = hlWords[j].replace(/[^a-zA-Z0-9]/g, "");
+                        if (hlWord == tcWord) {
+                            sentence += hlWords[j] + " ";
+                            if (j == 0) {
+                                tcIn = segment.words[i+j].start;
+                            }
+                            if (j == hlWords.length - 1) {
+                                tcOut = segment.words[i+j].end;
+                            }
                         } else {
-                            sentence = "";
+                            i += j
+                            j = 0;
                             break;
                         }
+                        j++;
                     }
-                    console.log(sentence);
+                    blob = {
+                        "tc_in": tcIn,
+                        "tc_out": tcOut,
+                        "text": sentence.trim()
+                    }
+                    console.log(blob);
                 }
             }
         }
