@@ -22,44 +22,92 @@ function writeOut(highlights) {
 function parseJson() {
     const highlights = require('./highlights.json');
     const timecodes = require('./gabriel_araunjo.json');
+    const speakers = timecodes.speakers;
     const segments = timecodes.segments;
+    const videofile = timecodes.filename;
+    let tcWords = []
 
-    for (highlight of highlights) {
-        const hlWords = highlight.split(' ');
-        let j = 0;
-        for (segment of segments) {
-            for (let i = 0; i < segment.words.length; i++) {
-                if (segment.words[i].text == hlWords[j]) {
-                    sentence = "";
-                    while (j < hlWords.length) {
-                        let tcWord = segment.words[i+j].text.replace(/[^a-zA-Z0-9]/g, "");
-                        let hlWord = hlWords[j].replace(/[^a-zA-Z0-9]/g, "");
-                        if (hlWord == tcWord) {
-                            sentence += hlWords[j] + " ";
-                            if (j == 0) {
-                                tcIn = segment.words[i+j].start;
-                            }
-                            if (j == hlWords.length - 1) {
-                                tcOut = segment.words[i+j].end;
-                            }
-                        } else {
-                            i += j
-                            j = 0;
-                            break;
-                        }
-                        j++;
-                    }
-                    blob = {
-                        "tc_in": tcIn,
-                        "tc_out": tcOut,
-                        "text": sentence.trim()
-                    }
-                    console.log(blob);
-                }
-            }
+    const regex = /[^a-zA-Z0-9áéíóúàèìòùüÁÉÍÓÚÀÈÌÒÙÜ]/g;
+
+    // flattens timecodes into single array of objects
+    for (segment of segments) {
+        for (word of segment.words) {
+            tcWords.push({
+                "raw": word.text,
+                "text": word.text.replace(regex, ""),
+                "in": word.start,
+                "out": word.end,
+                "speaker": segment.speaker
+            })
         }
     }
-    
+
+    // flattens highlights into single array of strings
+    let hlWords = [];
+    for (highlight of highlights) {
+        highlightSplit = highlight.split(' ');
+        // iterate through each word in highlight with index
+        for (let i = 0; i < highlightSplit.length; i++) {
+            hlWord = {
+                "raw": highlightSplit[i],
+                "text": highlightSplit[i].replace(regex, ""),
+                "start": false,
+                "end": false
+            }
+            if (i == 0) {
+                hlWord.start = true;
+            } else if (i == highlightSplit.length - 1) {
+                hlWord.end = true;
+            }
+        hlWords.push(hlWord);
+        }
+    }
+
+    // iterate though tcWords and hlWords to find matches
+    let completeWords = [];
+    let i = 0;
+    let j = 0;
+    while (i < tcWords.length) {
+        if (tcWords[i].text == hlWords[j].text) {
+            word = hlWords[j];
+            word.speaker = tcWords[i].speaker;
+            word.in = tcWords[i].in;
+            word.out = tcWords[i].out;
+            completeWords.push(word);
+            i++;
+            j++;
+        } else {
+            i++;
+        }
+    }
+
+    // console.log(completeWords);
+
+    // build sentences with speaker and timecodes
+    sentences = [];
+    quote = "";
+    for (completeWord of completeWords) {
+        if (completeWord.start) {
+            quote = completeWord.raw + " ";
+            tcIn = completeWord.in;
+            speaker = completeWord.speaker;
+        } else if (!completeWord.start && !completeWord.end) {
+            quote += completeWord.raw + " ";
+        } else if (completeWord.end) {
+            quote += completeWord.raw;
+            tcOut = completeWord.out;
+            sentences.push({
+                "quote": quote,
+                "speaker": speaker,
+                "in": tcIn,
+                "out": tcOut
+            });
+        } 
+    }
+
+    console.log(sentences);
+
+
 }
 
 async function serverStart() {
@@ -191,4 +239,4 @@ async function getTimecode(page) {
     el.evaluate(element => element.style.display = 'none');
  }
 
-main()
+main();
