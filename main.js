@@ -59,6 +59,9 @@ function parseJson() {
                 "start": false,
                 "end": false
             }
+            if (!hlWord.text) {
+                continue;
+            }
             if (i == 0) {
                 hlWord.start = true;
             } else if (i == highlightSplit.length - 1) {
@@ -86,10 +89,13 @@ function parseJson() {
         }
     }
 
-    console.log(tcWords.length);
-    console.log(hlWords.length);
-    console.log(completeWords.length);
-    return;
+    if (hlWords.length != completeWords.length) {
+        console.log("ERROR: hlWords and completeWords are not the same length");
+        console.log("TCwords:\t" + tcWords.length);
+        console.log("HLwords:\t" + hlWords.length);
+        console.log("CompleteWords:\t" + completeWords.length);
+        return;
+    }
 
     // build sentences with speaker and timecodes
     sentences = [];
