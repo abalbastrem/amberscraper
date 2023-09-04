@@ -105,5 +105,5 @@ dist
 
 # manual
 config.js
-oauth.js
+oauth.json
 APIKEY
