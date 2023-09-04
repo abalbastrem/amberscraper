@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/abalbastrem/amberscraper#readme",
   "dependencies": {
+    "google-auth-library": "^9.0.0",
+    "googleapis": "^126.0.1",
     "playwright": "^1.29.2"
   }
 }
