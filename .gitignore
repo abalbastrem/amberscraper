@@ -108,3 +108,4 @@ config.js
 oauth.json
 APIKEY
 tmp/
+token.json

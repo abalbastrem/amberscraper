@@ -1,14 +1,14 @@
 const { selectors } = require('playwright');
 const config = require('./config.js');
 const spreadsheet = require('./spreadsheet.js');
+const tmp = './tmp/';
 
 
 async function main() {
     // const highlights = await serverStart();
     // writeOut(highlights);
     const sentences = parseJson();
-    createSpreadsheet(sentences);
-    spreadsheet.Do(sentences, config.SPREADSHEET_ID, config.SPREADSHEET_NAME);
+    await spreadsheet(sentences, config.SPREADSHEET_ID, config.SPREADSHEET_NAME);
 }
 
 main();
@@ -58,7 +58,7 @@ async function hideElement(page, selector) {
 function writeOut(highlights) {
     const fs = require('fs');
     const json = JSON.stringify(highlights);
-    fs.writeFile('highlights.json', json, 'utf8', (err) => {
+    fs.writeFile(tmp+'highlights.json', json, 'utf8', (err) => {
         if (err) {
             console.log("Error writing file", err);
         } else {
@@ -68,8 +68,8 @@ function writeOut(highlights) {
 }
 
 function parseJson() {
-    const highlights = require('./highlights.json');
-    const timecodes = require('./gabriel_araunjo.json');
+    const highlights = require(tmp+'highlights.json');
+    const timecodes = require(tmp+'gabriel_araunjo.json');
     const speakers = timecodes.speakers;
     const segments = timecodes.segments;
     const videofile = timecodes.filename;

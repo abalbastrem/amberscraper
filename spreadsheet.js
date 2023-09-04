@@ -13,7 +13,7 @@ const readFileAsync = promisify(fs.readFile);
 async function Do(jsonData, spreadsheetId, sheetName) {
   try {
     // Load client secrets from a file.
-    const content = await readFileAsync('credentials.json');
+    const content = await readFileAsync('oauth.json');
     const credentials = JSON.parse(content);
 
     // Authorize a client with the loaded credentials.
