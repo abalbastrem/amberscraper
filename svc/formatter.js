@@ -1,4 +1,5 @@
-const tmp = './../tmp/';
+const tmpDir = './../tmp/';
+const transcriptsDir = './../transcripts/';
 
 // function Do(highlights) {
 //     Write(highlights);
@@ -6,11 +7,11 @@ const tmp = './../tmp/';
 //     return sentences;
 // }
 
-async function Write(highlights) {
+export async function Write(highlights) {
     const fs = require('fs');
     const json = JSON.stringify(highlights);
     console.log(json)
-    fs.writeFile(tmp+'highlights.json', json, 'utf8', (err) => {
+    fs.writeFile(tmpDir+'highlights.json', json, 'utf8', (err) => {
         if (err) {
             console.log("Error writing file", err);
         } else {
@@ -19,13 +20,15 @@ async function Write(highlights) {
     });
 }
 
-async function Read() {
-    const highlights = require(tmp+'highlights.json');
-    const timecodes = require(tmp+'donald_dutton_2.json');
+export async function Read(highlightsRaw) {
+    // const highlights = JSON.stringify(highlightsRaw);
+    const highlights = highlightsRaw;
+    console.log(highlights)
+    // const highlights = require(tmpDir+'highlights.json');
+    const timecodes = require(transcriptsDir+'20210812_donald_dutton_2.json');
     const speakers = timecodes.speakers;
     const segments = timecodes.segments;
     const videofile = timecodes.filename;
-    let tcWords = []
 
     let speakerMap = new Map();
     for (speaker of speakers) {
@@ -35,6 +38,7 @@ async function Read() {
     const regex = /[^a-zA-Z0-9áéíóúàèìòùüÁÉÍÓÚÀÈÌÒÙÜ]/g;
 
     // flattens timecodes into single array of objects
+    let tcWords = [];
     for (segment of segments) {
         for (word of segment.words) {
             tcWords.push({
@@ -123,4 +127,4 @@ async function Read() {
     return sentences;
 }
 
-module.exports = {Write, Read};
+// module.exports = {Write, Read};
