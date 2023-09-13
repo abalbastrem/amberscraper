@@ -107,5 +107,6 @@ dist
 config.js
 oauth.json
 APIKEY
-tmp/
+tmp/*
+transcripts/*
 token.json
