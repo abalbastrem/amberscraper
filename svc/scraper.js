@@ -46,4 +46,4 @@ async function hideElement(page, selector) {
     el.evaluate(element => element.style.display = 'none');
  }
 
- module.exports = Do;
+module.exports = Do;

@@ -1,34 +1,39 @@
-const tmpDir = './../tmp/';
-const transcriptsDir = './../transcripts/';
+const tmpDir = './tmp/';
+const transcriptsDir = './transcripts/';
 
-// function Do(highlights) {
-//     Write(highlights);
-//     const sentences = Read();
-//     return sentences;
-// }
+const fs = require('fs');
 
-export async function Write(highlights) {
-    const fs = require('fs');
-    const json = JSON.stringify(highlights);
-    console.log(json)
-    fs.writeFile(tmpDir+'highlights.json', json, 'utf8', (err) => {
-        if (err) {
-            console.log("Error writing file", err);
-        } else {
-            console.log("Successfully wrote file");
-        }
-    });
+async function Do(highlights) {
+    // await Write(highlights);
+    const sentences = await Read();
+    return sentences;
 }
 
-export async function Read(highlightsRaw) {
+async function Write(highlights) {
+    const jsonData = JSON.stringify(highlights);
+    try {
+        fs.writeFileSync(tmpDir + 'highlights.json', jsonData, 'utf8');
+        console.log("Successfully wrote file");
+    } catch (err) {
+        console.log("Error writing file", err);
+    }
+}
+
+async function Read() {
+    console.log('READ...');
     // const highlights = JSON.stringify(highlightsRaw);
-    const highlights = highlightsRaw;
-    console.log(highlights)
-    // const highlights = require(tmpDir+'highlights.json');
-    const timecodes = require(transcriptsDir+'20210812_donald_dutton_2.json');
+    // const highlights = highlightsRaw;
+    // console.log(highlights)
+    const highlightsRaw = fs.readFileSync(tmpDir+'highlights.json', 'utf8');
+    const highlights = JSON.parse(highlightsRaw);
+    const timecodesRaw = fs.readFileSync(transcriptsDir+'20210812_donald_dutton_2.json', 'utf8');
+    const timecodes = JSON.parse(timecodesRaw);
     const speakers = timecodes.speakers;
     const segments = timecodes.segments;
     const videofile = timecodes.filename;
+
+    console.log(highlights);
+    console.log(timecodes);
 
     let speakerMap = new Map();
     for (speaker of speakers) {
@@ -128,3 +133,4 @@ export async function Read(highlightsRaw) {
 }
 
 // module.exports = {Write, Read};
+module.exports = Do;
