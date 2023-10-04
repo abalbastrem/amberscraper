@@ -65,16 +65,9 @@ async function Read() {
             hlWord = {
                 "raw": highlightSplit[i],
                 "text": highlightSplit[i].replace(regex, ""),
-                "start": false,
-                "end": false
             }
             if (!hlWord.text) {
                 continue;
-            }
-            if (i == 0) {
-                hlWord.start = true;
-            } else if (i == highlightSplit.length - 1) {
-                hlWord.end = true;
             }
         hlWords.push(hlWord);
         }
@@ -82,21 +75,41 @@ async function Read() {
 
     // iterate though tcWords and hlWords to find matches
     let completeWords = [];
+    let isPreviousMatch = false;
     let i = 0;
     let j = 0;
-    while (i < tcWords.length) {
-        if (tcWords[i].text == hlWords[j].text) {
+    while (j < hlWords.length) {
+        console.log(tcWords[i].text + "\t\t" + hlWords[j].text)
+        if (tcWords[i].text == hlWords[j].text) { // match
             word = hlWords[j];
+            word.start = false;
+            word.end = false;
             word.speaker = tcWords[i].speaker;
             word.in = tcWords[i].in;
             word.out = tcWords[i].out;
+            if (!isPreviousMatch) {
+                word.start = true;
+            }
+            if (j == hlWords.length - 1) {
+                word.end = true;
+            }
             completeWords.push(word);
             i++;
             j++;
-        } else {
+            isPreviousMatch = true;
+        } else { // not match
             i++;
+            if (isPreviousMatch) {
+                word = hlWords[j-1];
+                completeWords.pop();
+                word.end = true;
+                completeWords.push(word);
+            }
+            isPreviousMatch = false;
         }
     }
+
+    console.log(completeWords.length, hlWords.length)
 
     if (hlWords.length != completeWords.length) {
         console.log("ERROR: hlWords and completeWords are not the same length");
