@@ -1,10 +1,11 @@
 const tmpDir = './tmp/';
 const transcriptsDir = './transcripts/';
+const config = require('./../config.js');
 
 const fs = require('fs');
 
 async function Do(highlights) {
-    // await Write(highlights);
+    await Write(highlights);
     const sentences = await Read();
     return sentences;
 }
@@ -12,8 +13,12 @@ async function Do(highlights) {
 async function Write(highlights) {
     const jsonData = JSON.stringify(highlights);
     try {
-        fs.writeFileSync(tmpDir + 'highlights.json', jsonData, 'utf8');
-        console.log("Successfully wrote file");
+        res = fs.writeFileSync(tmpDir + 'highlights.json', jsonData, 'utf8');
+        if (res) {
+            console.log("Successfully wrote file");
+        } else {
+            console.log("Failed to write file");
+        }
     } catch (err) {
         console.log("Error writing file", err);
     }
@@ -21,19 +26,13 @@ async function Write(highlights) {
 
 async function Read() {
     console.log('READ...');
-    // const highlights = JSON.stringify(highlightsRaw);
-    // const highlights = highlightsRaw;
-    // console.log(highlights)
     const highlightsRaw = fs.readFileSync(tmpDir+'highlights.json', 'utf8');
     const highlights = JSON.parse(highlightsRaw);
-    const timecodesRaw = fs.readFileSync(transcriptsDir+'20210812_donald_dutton_2.json', 'utf8');
+    const timecodesRaw = fs.readFileSync(transcriptsDir + config.TRANSCRIPT, 'utf8');
     const timecodes = JSON.parse(timecodesRaw);
     const speakers = timecodes.speakers;
     const segments = timecodes.segments;
     const videofile = timecodes.filename;
-
-    console.log(highlights);
-    console.log(timecodes);
 
     let speakerMap = new Map();
     for (speaker of speakers) {
@@ -79,8 +78,8 @@ async function Read() {
     let i = 0;
     let j = 0;
     while (j < hlWords.length) {
-        console.log(tcWords[i].text + "\t\t" + hlWords[j].text)
-        if (tcWords[i].text == hlWords[j].text) { // match
+        // match
+        if (tcWords[i].text == hlWords[j].text) {
             word = hlWords[j];
             word.start = false;
             word.end = false;
@@ -97,7 +96,8 @@ async function Read() {
             i++;
             j++;
             isPreviousMatch = true;
-        } else { // not match
+        // not match
+        } else {
             i++;
             if (isPreviousMatch) {
                 word = hlWords[j-1];
@@ -108,8 +108,6 @@ async function Read() {
             isPreviousMatch = false;
         }
     }
-
-    console.log(completeWords.length, hlWords.length)
 
     if (hlWords.length != completeWords.length) {
         console.log("ERROR: hlWords and completeWords are not the same length");
@@ -141,7 +139,6 @@ async function Read() {
         } 
     }
 
-    console.log(sentences);
     return sentences;
 }
 

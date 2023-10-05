@@ -1,7 +1,5 @@
 const config = require('./../config.js');
 
-const { selectors } = require('playwright');
-
 async function Do() {
     const playwright = require('playwright');
     return (async () => {
@@ -24,11 +22,11 @@ async function Do() {
         await page.goto(config.URL_VIDEO, { waitUntil: 'domcontentloaded', timeout: 0 });
         await page.waitForNavigation();
         page.waitForSelector('div[class="WavePlayer__highlight"]');
-        await page.waitForSelector('button[data-type="close"]');
+        await page.waitForSelector('button[data-type="close"]'); // FALLIBLE
         await page.click('button[data-type="close"]');
 
         console.log("hide annoying elements");
-        await hideElement(page, 'footer[class="footer_main"]');
+        // await hideElement(page, 'footer[class="footer_main"]');
         await hideElement(page, 'div[class="WavePlayer__mediawrap isVideo isExpanded"]');
         await hideElement(page, 'header[class="AppBar"]');
         
@@ -36,6 +34,9 @@ async function Do() {
         const highlightedTexts = await page.locator('span[style="background-color: rgba(0, 90, 80, 0.35);"] > span').allInnerTexts();
 
         console.log(highlightedTexts);
+
+        // await page.waitForTimeout(50000);
+        // await browser.close();
 
         return highlightedTexts;
     })();
