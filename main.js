@@ -1,19 +1,16 @@
-const config = require('./config.js');
-
 // svc
-const scrape = require('./svc/scraper.js');
-const format = require('./svc/formatter.js');
-const spreadsheet = require('./svc/spreadsheet.js');
+import { scrape } from './svc/scraper.js';
+import { format } from './svc/formatter.js';
+import { createSpreadsheet } from './svc/spreadsheet.js';
 
 
 async function main() {
     console.log("***** HIGHLIGHTS *****");
     const highlights = await scrape();
     console.log("***** FORMATTER *****");
-    const sentences = await format(highlights);
-    console.log(sentences);
-    // console.log("***** SPREADSHEET *****");
-    // await spreadsheet(sentences, config.SPREADSHEET_ID, config.SPREADSHEET_NAME);
+    const sentences = format(highlights);
+    console.log("***** SPREADSHEET *****");
+    await createSpreadsheet(sentences, config.SPREADSHEET_ID, config.SPREADSHEET_NAME);
 }
 
 main();

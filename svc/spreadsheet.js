@@ -1,8 +1,10 @@
-const { google } = require('googleapis');
-const fs = require('fs');
-const readline = require('readline');
-const { promisify } = require('util');
-const { MAX_ACCESS_BOUNDARY_RULES_COUNT } = require('google-auth-library/build/src/auth/downscopedclient');
+import { SPREADSHEET_ID, SPREADSHEET_NAME } from './../config.js';
+
+import {google} from 'googleapis';
+import fs from 'fs';
+import readline from 'readline';
+import {promisify} from 'util';
+// import { MAX_ACCESS_BOUNDARY_RULES_COUNT } from 'google-auth-library/build/src/auth/downscopedclient';
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 const TOKEN_PATH = 'token.json';
@@ -10,7 +12,7 @@ const TOKEN_PATH = 'token.json';
 // Load client secrets from a file, which you obtained in step 2.
 const readFileAsync = promisify(fs.readFile);
 
-async function Do(jsonData, spreadsheetId, sheetName) {
+export async function createSpreadsheet(jsonData) {
   try {
     // Load client secrets from a file.
     const content = await readFileAsync('oauth.json');
@@ -36,11 +38,11 @@ async function Do(jsonData, spreadsheetId, sheetName) {
     const rows = jsonData.map((item) => [item.quote, item.speaker, item.in, item.out]);
 
     // Define the range where the data will be written.
-    const range = `${sheetName}!A1:D${jsonData.length + 1}`;
+    const range = `${SPREADSHEET_NAME}!A1:D${jsonData.length + 1}`;
 
     // Write the data to the spreadsheet.
     await sheets.spreadsheets.values.update({
-      spreadsheetId,
+      SPREADSHEET_ID,
       range,
       valueInputOption: 'RAW',
       resource: {
@@ -80,16 +82,3 @@ async function getNewToken(oAuth2Client) {
     }
   });
 }
-
-// Replace these values with your own.
-const jsonData = [
-  {
-    quote: 'el voto fue a favor por un solo voto, por el voto de calidad, también de María Emilia Casas, que era la presidenta',
-    speaker: 'Albert',
-    in: 2221.46,
-    out: 2230.82,
-  },
-  // Add more data objects as needed.
-];
-
-module.exports = Do;

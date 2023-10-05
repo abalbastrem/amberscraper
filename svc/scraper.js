@@ -1,7 +1,11 @@
-const config = require('./../config.js');
+import {URL_LOGIN, USER_EMAIL, USER_PASSWORD, URL_VIDEO} from './../config.js';
 
-async function Do() {
-    const playwright = require('playwright');
+import playwright from 'playwright';
+
+const textElement = 'span[style="background-color: rgba(0, 90, 80, 0.35);"] > span'
+
+export async function scrape() {
+    // const playwright = require('playwright');
     return (async () => {
         const browser = await playwright.firefox.launch({
             headless: false,
@@ -12,14 +16,14 @@ async function Do() {
         const page = await context.newPage();
 
         console.log("login page");
-        await page.goto(config.URL_LOGIN);
-        await page.type('input[placeholder="Email"]', config.USER_EMAIL);
-        await page.type('input[placeholder="Password"]', config.USER_PASSWORD);
+        await page.goto(URL_LOGIN);
+        await page.type('input[placeholder="Email"]', USER_EMAIL);
+        await page.type('input[placeholder="Password"]', USER_PASSWORD);
         await page.click('button[data-testid="login-btn-login"]');
         await page.waitForNavigation();
 
         console.log("video page");
-        await page.goto(config.URL_VIDEO, { waitUntil: 'domcontentloaded', timeout: 0 });
+        await page.goto(URL_VIDEO, { waitUntil: 'domcontentloaded', timeout: 0 });
         await page.waitForNavigation();
         page.waitForSelector('div[class="WavePlayer__highlight"]');
         await page.waitForSelector('button[data-type="close"]'); // FALLIBLE
@@ -31,11 +35,10 @@ async function Do() {
         await hideElement(page, 'header[class="AppBar"]');
         
         console.log("locate highlighted texts");
-        const highlightedTexts = await page.locator('span[style="background-color: rgba(0, 90, 80, 0.35);"] > span').allInnerTexts();
+        const highlightedTexts = await page.locator(textElement).allInnerTexts();
 
         console.log(highlightedTexts);
 
-        // await page.waitForTimeout(50000);
         // await browser.close();
 
         return highlightedTexts;
@@ -46,5 +49,3 @@ async function hideElement(page, selector) {
     const el = await page.locator(selector);
     el.evaluate(element => element.style.display = 'none');
  }
-
-module.exports = Do;

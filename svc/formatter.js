@@ -1,16 +1,16 @@
+import {TRANSCRIPT} from './../config.js';
+import fs from 'fs';
+
 const tmpDir = './tmp/';
 const transcriptsDir = './transcripts/';
-const config = require('./../config.js');
 
-const fs = require('fs');
-
-async function Do(highlights) {
-    await Write(highlights);
-    const sentences = await Read();
+export function format(highlights) {
+    write(highlights);
+    const sentences = read();
     return sentences;
 }
 
-async function Write(highlights) {
+function write(highlights) {
     const jsonData = JSON.stringify(highlights);
     try {
         res = fs.writeFileSync(tmpDir + 'highlights.json', jsonData, 'utf8');
@@ -24,11 +24,11 @@ async function Write(highlights) {
     }
 }
 
-async function Read() {
+function read() {
     console.log('READ...');
     const highlightsRaw = fs.readFileSync(tmpDir+'highlights.json', 'utf8');
     const highlights = JSON.parse(highlightsRaw);
-    const timecodesRaw = fs.readFileSync(transcriptsDir + config.TRANSCRIPT, 'utf8');
+    const timecodesRaw = fs.readFileSync(transcriptsDir + TRANSCRIPT, 'utf8');
     const timecodes = JSON.parse(timecodesRaw);
     const speakers = timecodes.speakers;
     const segments = timecodes.segments;
@@ -141,6 +141,3 @@ async function Read() {
 
     return sentences;
 }
-
-// module.exports = {Write, Read};
-module.exports = Do;

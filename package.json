@@ -1,6 +1,7 @@
 {
   "name": "amberscraper",
   "version": "1.0.0",
+  "type": "module",
   "description": "scraper that takes the highlighted text from amberscript and pastes it on a google spreadsheet",
   "main": "main.js",
   "scripts": {
