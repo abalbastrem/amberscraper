@@ -13,12 +13,8 @@ export function format(highlights) {
 function write(highlights) {
     const jsonData = JSON.stringify(highlights);
     try {
-        res = fs.writeFileSync(tmpDir + 'highlights.json', jsonData, 'utf8');
-        if (res) {
-            console.log("Successfully wrote file");
-        } else {
-            console.log("Failed to write file");
-        }
+        fs.writeFileSync(tmpDir + 'highlights.json', jsonData, 'utf8');
+        console.log("Successfully wrote file");
     } catch (err) {
         console.log("Error writing file", err);
     }

@@ -5,7 +5,6 @@ import playwright from 'playwright';
 const textElement = 'span[style="background-color: rgba(0, 90, 80, 0.35);"] > span'
 
 export async function scrape() {
-    // const playwright = require('playwright');
     return (async () => {
         const browser = await playwright.firefox.launch({
             headless: false,
@@ -39,6 +38,7 @@ export async function scrape() {
 
         console.log(highlightedTexts);
 
+        // await page.waitForTimeout(10000);
         // await browser.close();
 
         return highlightedTexts;

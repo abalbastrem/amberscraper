@@ -10,7 +10,7 @@ async function main() {
     console.log("***** FORMATTER *****");
     const sentences = format(highlights);
     console.log("***** SPREADSHEET *****");
-    await createSpreadsheet(sentences, config.SPREADSHEET_ID, config.SPREADSHEET_NAME);
+    await createSpreadsheet(sentences);
 }
 
 main();
